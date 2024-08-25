@@ -61,5 +61,4 @@ jobs:
         run: |
           # source "${HOME}/conda/etc/profile.d/conda.sh"
           # conda activate sklearn
-          ls dist/cibw-wheels
-          pip install "dist/cibw-wheels/*"
+          pip install dist/cibw-wheels/$(ls dist/cibw-wheels)
