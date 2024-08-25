@@ -1,0 +1,64 @@
+name: Test wheel
+
+on:
+  push:
+
+jobs:
+  build_wheel:
+    runs-on: "ubuntu-latest"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: scikit-learn/scikit-learn
+
+      - name: Build wheels
+        uses: pypa/cibuildwheel@v2.20.0
+        env:
+          CIBW_BUILD: cp312-manylinux_x86_64
+          CIBW_MANYLINUX_X86_64_IMAGE: manylinux2014
+          CIBW_BUILD_VERBOSITY: 1
+          CIBW_ARCHS: x86_64
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cibw-wheels
+          path: ./wheelhouse/*.whl
+
+  tests:
+    name: Run Array API unit tests
+    needs: [build_wheel]
+    runs-on: "ubuntu"
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: cibw-*
+          path: dist
+
+      - uses: actions/setup-python@v5
+        with:
+          # XXX: The 3.12.4 release of Python on GitHub Actions is corrupted:
+          # https://github.com/actions/setup-python/issues/886
+          python-version: '3.12.3'
+      # - name: Checkout main repository
+      #   uses: actions/checkout@v4
+      #   with:
+      #     repository: scikit-learn/scikit-learn
+      #     path: scikit-learn-repo
+
+      # - name: Cache conda environment
+      #   id: cache-conda
+      #   uses: actions/cache@v4
+      #   with:
+      #     path: ~/conda
+      #     key: ${{ runner.os }}-build-${{ hashFiles('scikit-learn-repo/build_tools/github/create_gpu_environment.sh') }}-${{ hashFiles('scikit-learn-repo/build_tools/github/pylatest_conda_forge_cuda_array-api_linux-64_conda.lock') }}
+
+      # - name: Install miniforge
+      #   if: ${{ steps.cache-conda.outputs.cache-hit != 'true' }}
+      #   run: bash build_tools/github/create_gpu_environment.sh
+      #   working-directory: scikit-learn-repo
+
+      - name: Install scikit-learn
+        run: |
+          # source "${HOME}/conda/etc/profile.d/conda.sh"
+          # conda activate sklearn
+          pip install dist/*
