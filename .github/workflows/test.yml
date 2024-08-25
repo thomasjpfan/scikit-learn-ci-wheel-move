@@ -27,7 +27,7 @@ jobs:
   tests:
     name: Run Array API unit tests
     needs: [build_wheel]
-    runs-on: "ubuntu"
+    runs-on: "ubuntu-latest"
     steps:
       - uses: actions/download-artifact@v4
         with:
