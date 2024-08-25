@@ -9,7 +9,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          repository: scikit-learn/scikit-learn
+          repository: amueller/word_cloud
 
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.20.0
