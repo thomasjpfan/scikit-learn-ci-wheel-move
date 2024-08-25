@@ -9,7 +9,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          repository: amueller/word_cloud
+          repository: scikit-learn/scikit-learn
 
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.20.0
@@ -39,26 +39,32 @@ jobs:
           # XXX: The 3.12.4 release of Python on GitHub Actions is corrupted:
           # https://github.com/actions/setup-python/issues/886
           python-version: '3.12.3'
-      # - name: Checkout main repository
-      #   uses: actions/checkout@v4
-      #   with:
-      #     repository: scikit-learn/scikit-learn
-      #     path: scikit-learn-repo
+      - name: Checkout main repository
+        uses: actions/checkout@v4
+        with:
+          repository: scikit-learn/scikit-learn
 
-      # - name: Cache conda environment
-      #   id: cache-conda
-      #   uses: actions/cache@v4
-      #   with:
-      #     path: ~/conda
-      #     key: ${{ runner.os }}-build-${{ hashFiles('scikit-learn-repo/build_tools/github/create_gpu_environment.sh') }}-${{ hashFiles('scikit-learn-repo/build_tools/github/pylatest_conda_forge_cuda_array-api_linux-64_conda.lock') }}
+      - name: Cache conda environment
+        id: cache-conda
+        uses: actions/cache@v4
+        with:
+          path: ~/conda
+          key: ${{ runner.os }}-build-${{ hashFiles('build_tools/github/create_gpu_environment.sh') }}-${{ hashFiles('build_tools/github/pylatest_conda_forge_cuda_array-api_linux-64_conda.lock') }}
 
-      # - name: Install miniforge
-      #   if: ${{ steps.cache-conda.outputs.cache-hit != 'true' }}
-      #   run: bash build_tools/github/create_gpu_environment.sh
-      #   working-directory: scikit-learn-repo
+      - name: Install miniforge
+        if: ${{ steps.cache-conda.outputs.cache-hit != 'true' }}
+        run: bash build_tools/github/create_gpu_environment.sh
 
       - name: Install scikit-learn
         run: |
-          # source "${HOME}/conda/etc/profile.d/conda.sh"
-          # conda activate sklearn
+          source "${HOME}/conda/etc/profile.d/conda.sh"
+          conda activate sklearn
           pip install dist/cibw-wheels/$(ls dist/cibw-wheels)
+
+      - name: Run tests
+        run: |
+          source "${HOME}/conda/etc/profile.d/conda.sh"
+          conda activate sklearn
+          mkdir tmp
+          cd tmp
+          pytest --pyargs sklearn.neighbors.tests.test_lof
