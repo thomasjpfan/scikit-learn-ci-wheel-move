@@ -31,14 +31,15 @@ jobs:
     steps:
       - uses: actions/download-artifact@v4
         with:
-          pattern: cibw-*
-          path: dist
+          pattern: cibw-wheels
+          path: ~/dist
 
       - uses: actions/setup-python@v5
         with:
           # XXX: The 3.12.4 release of Python on GitHub Actions is corrupted:
           # https://github.com/actions/setup-python/issues/886
           python-version: '3.12.3'
+
       - name: Checkout main repository
         uses: actions/checkout@v4
         with:
@@ -59,7 +60,7 @@ jobs:
         run: |
           source "${HOME}/conda/etc/profile.d/conda.sh"
           conda activate sklearn
-          pip install dist/cibw-wheels/$(ls dist/cibw-wheels)
+          pip install ~/dist/cibw-wheels/$(ls ~/dist/cibw-wheels)
 
       - name: Run tests
         run: |
